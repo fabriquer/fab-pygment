@@ -29,6 +29,7 @@ class FabLexer(RegexLexer):
 			(r'file', Keyword.Type),
 			(r'int', Keyword.Type),
 			(r'list', Keyword.Type),
+			(r'record', Keyword.Type),
 			(r'string', Keyword.Type),
 
 			(r'in', Keyword.Pseudo),
