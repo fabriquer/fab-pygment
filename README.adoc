@@ -1,0 +1,7 @@
+= Fabrique lexer for Pygments
+
+== Installation
+
+```console
+$ ./setup.py build install
+```
