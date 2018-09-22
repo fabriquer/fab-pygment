@@ -1,15 +1,17 @@
 from pygments.lexer import RegexLexer, bygroups, words
 from pygments.token import *
 
-__all__ = [ 'FabLexer' ]
+__all__ = ['FabLexer']
+
 
 def keywords(*strings):
     return words(strings, prefix=r'\b', suffix=r'\b')
 
+
 class FabLexer(RegexLexer):
     name = 'Fabrique'
-    aliases = [ 'fab', 'fabrique' ]
-    filenames = [ '*.fab', 'fabfile' ]
+    aliases = ['fab', 'fabrique']
+    filenames = ['*.fab', 'fabfile']
 
     tokens = {
         'root': [
