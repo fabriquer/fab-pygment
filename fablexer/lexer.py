@@ -1,7 +1,10 @@
-from pygments.lexer import RegexLexer, bygroups
+from pygments.lexer import RegexLexer, bygroups, words
 from pygments.token import *
 
 __all__ = [ 'FabLexer' ]
+
+def keywords(*strings):
+    return words(strings, prefix=r'\b', suffix=r'\b')
 
 class FabLexer(RegexLexer):
     name = 'Fabrique'
@@ -10,79 +13,62 @@ class FabLexer(RegexLexer):
 
     tokens = {
         'root': [
-            (r'#.*\n', Comment.Single),
-
-            (r"'", String, 'singlestring'),
-            (r'"', String, 'doublestring'),
-
-            (r'(.*?)(\s*)(=)(\s*)(function)',
-                bygroups(Name.Function, Whitespace, Operator,
-                         Whitespace, Name.Builtin)),
-
-            (r'action', Name.Builtin),
-            (r'buildroot', Name.Builtin),
-            (r'files', Name.Builtin),
-            (r'function', Name.Builtin),
-            (r'srcroot', Name.Builtin),
-
-            (r'bool', Keyword.Type),
-            (r'file', Keyword.Type),
-            (r'int', Keyword.Type),
-            (r'list', Keyword.Type),
-            (r'record', Keyword.Type),
-            (r'string', Keyword.Type),
-
-            (r'in', Keyword.Pseudo),
-            (r'out', Keyword.Pseudo),
-
-            (r'if', Keyword),
-            (r'else', Keyword),
-            (r'foreach', Keyword),
-            (r'as', Keyword),
-
-            (r'([_a-zA-Z]\w*)(\s*)(=)',
-                bygroups(Name.Constant, Whitespace, Operator)),
-
-            (r'([_a-zA-Z]\w*)(\s*)(:)(\s*)(\w*)(\s*)(=)',
-                bygroups(Name.Constant,
-                    Whitespace,
-                    Punctuation,
-                    Whitespace,
-                    Keyword.Type,
-                    Whitespace,
-                    Operator)),
-
-            (r'([_a-zA-Z]\w*)',
-                bygroups(Name.Variable)),
-
-            (r'([_a-zA-Z]\w*)(\s*)(:)(\s*)(\w*)',
-                bygroups(Name.Constant,
-                    Whitespace,
-                    Punctuation,
-                    Whitespace,
-                    Keyword.Type)),
-
-            (r'\+', Operator),
-            (r'\.\+', Operator),
-            (r'<-', Operator),
-            (r'=>', Operator),
-            (r'[=:]', Operator),
-            (r'and', Operator.Word),
-            (r'or', Operator.Word),
-            (r'xor', Operator.Word),
-
-            (r'[\.,(){}\[\];]', Punctuation),
-
+            # Comments (single-line only) and whitespace:
+            (r'#', Comment.Single, 'comment'),
             (r'[\s+]', Whitespace),
+
+            # Literals: boolean, integer and string
+            ("'", Literal.String.Single, 'singlestring'),
+            ('"', Literal.String.Double, 'doublestring'),
+
+            (r'\b[0-9]+\b', Literal.Number.Integer),
+            (keywords('true', 'false'), Keyword.Constant),
+
+            # Builtin functions, types and constants:
+            (keywords('action', 'file', 'files', 'import'), Name.Builtin),
+            (keywords('bool', 'file', 'int', 'list', 'record', 'string'),
+                Keyword.Type),
+            (keywords('in', 'out'), Keyword.Pseudo),
+            (keywords('buildroot', 'srcroot'), Keyword.Constant),
+
+            # Other keywords:
+            (keywords('if', 'else', 'foreach', 'function'), Keyword),
+
+            # Operators and punctuation:
+            (r'[\+\.]', Operator),
+            (r'[!=]=', Operator),
+            (r'=', Keyword.Declaration),
+            (keywords('and', 'or', 'xor'), Operator.Word),
+            (r'[,(){}\[\]:;<\->]', Punctuation),
+
+            # Other identifiers:
+            (r'([_a-zA-Z]\w*)', bygroups(Name.Variable)),
         ],
 
+        # We recognize lit directives within comments:
+        'comment': [
+            (r'\n', Comment.Single, '#pop'),
+            (keywords('RUN', 'CHECK', 'CHECK-DAG', 'CHECK-NEXT', 'CHECK-NOT'),
+                Comment.Special),
+            (r"[^\n]", Comment.Single),
+        ],
+
+        # Within single-quoted strings, a single quote ends the string
         'singlestring': [
-            (r"'", String, '#pop'),
-            (r"[^']", String),
+            ("'", Literal.String.Single, '#pop'),
+            (r'\${', Literal.String.Delimiter, 'stringvar'),
+            (r"[^']", Literal.String.Single),
         ],
 
+        # Within double-quoted strings, a double quote ends the string
         'doublestring': [
-            (r'"', String, '#pop'),
-            (r'[^"]', String),
+            ('"', Literal.String.Double, '#pop'),
+            (r'\${', Literal.String.Delimiter, 'stringvar'),
+            (r'[^"]', Literal.String.Double),
+        ],
+
+        'stringvar': [
+            ('}', Literal.String.Interpol, '#pop'),
+            (r'[^}]', Literal.String.Interpol),
         ],
     }
