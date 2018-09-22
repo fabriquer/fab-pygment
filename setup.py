@@ -32,6 +32,6 @@ setup(
     packages=find_packages(),
     entry_points="""
     [pygments.lexers]
-    fablexer = fablexer.lexer:FabLexer
+    fab = fab.lexer:FabLexer
     """,
 )
