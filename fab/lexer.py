@@ -42,7 +42,7 @@ class FabLexer(RegexLexer):
         'root': [
             # Comments (single-line only) and whitespace:
             (r'#', Comment.Single, 'comment'),
-            (r'[\s+]', Whitespace),
+            (r'[\s]', Whitespace),
 
             # Literals: boolean, integer and string
             ("'", Literal.String.Single, 'singlestring'),
@@ -62,9 +62,9 @@ class FabLexer(RegexLexer):
             (keywords('if', 'else', 'foreach', 'function'), Keyword),
 
             # Operators and punctuation:
-            (r'[\+\.]', Operator),
-            (r'[!=]=', Operator),
-            (r'=', Keyword.Declaration),
+            (r'[+\-\*/\.]', Operator),
+            (r'[!=]?=', Operator),
+            (r'::', Operator),
             (keywords('and', 'or', 'xor'), Operator.Word),
             (r'[,(){}\[\]:;<\->]', Punctuation),
 
